@@ -1,0 +1,5 @@
+characterai
+requests
+pydub
+python-dotenv
+websockets
