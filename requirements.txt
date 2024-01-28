@@ -3,3 +3,5 @@ requests
 pydub
 python-dotenv
 websockets
+pyaudio
+gtts
