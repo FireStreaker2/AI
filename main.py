@@ -1,12 +1,12 @@
 import os
 import time
-import requests
+import g4f
 from characterai import PyCAI
+from openai import OpenAI
 from pydub import AudioSegment
 from pydub.playback import play
 from dotenv import load_dotenv
 from gtts import gTTS
-from openai import OpenAI
 
 load_dotenv()
 
@@ -15,7 +15,9 @@ config = {
     "caiCharacter": os.getenv("CAI_CHARACTER"),
     "openAIToken": os.getenv("OPENAI_TOKEN"),
     "openAIModel": "gpt-3.5-turbo",
-    "aiMethod": "CAI",
+    "g4fModel": "gpt-3.5-turbo",
+    "g4fProvider": g4f.Provider.Vercel,
+    "aiMethod": "G4F",
 }
 
 if config["aiMethod"] == "CAI":
@@ -31,6 +33,10 @@ if config["aiMethod"] == "CAI":
         tgt = participants[1]["user"]["username"]
         bot = participants[1]["name"]
 
+elif config["aiMethod"] == "G4F":
+    history = []
+
+    bot = config["g4fModel"]
 
 else:
     client = OpenAI(api_key=config["openAIToken"])
@@ -49,6 +55,17 @@ try:
 
             name = data["src_char"]["participant"]["name"]
             text = data["replies"][0]["text"]
+
+        elif config["aiMethod"] == "G4F":
+            history.append({"role": "user", "content": message})
+
+            name = config["g4fModel"]
+            text = g4f.ChatCompletion.create(
+                model=config["g4fModel"],
+                messages=history,
+            )
+
+            history.append({"role": "assistant", "content": text})
 
         else:
             history.append({"role": "user", "content": message})

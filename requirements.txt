@@ -1,8 +1,9 @@
 characterai
-requests
-pydub
-python-dotenv
-websockets
-pyaudio
-gtts
 openai
+g4f
+requests
+python-dotenv
+pydub
+gtts
+pyaudio
+websockets
