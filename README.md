@@ -4,11 +4,11 @@
 AI is a simple program to talk to artificial intelligence. It supports many different ways of communication, and different types of LLMs.
 
 # Features
-* Text to text
-* Text to speech
-* Speech to text
-* Speech to speech
-* Ability to customize source of AI
+- [x] Text to text
+- [x] Text to speech
+- [ ] Speech to text
+- [ ] Speech to speech
+- [x] Ability to customize source of AI
 
 # Usage
 ## Setup
@@ -23,7 +23,20 @@ $ python main.py
 ```
 
 ## Configuration
-In order to configure how this program works, you can manually modify the ``config`` dictionary located in ``main.py``.
+In order to configure how this program works, you can edit your ``.env`` file to include the values you want. Alternatively, you can also manually modify the following ``config`` dictionary located in ``main.py``.
+```python
+config = {
+    "caiToken": os.getenv("CAI_TOKEN"),
+    "caiCharacter": os.getenv("CAI_CHARACTER"),
+    "openAIToken": os.getenv("OPENAI_TOKEN"),
+    "openAIModel": os.getenv("OPENAI_MODEL", "gpt-3.5-turbo"),
+    "g4fModel": os.getenv("G4F_MODEL", "gpt-3.5-turbo"),
+    "g4fProvider": os.getenv("G4F_PROVIDER", g4f.Provider.Vercel),
+    "huggingfaceModel": os.getenv("HUGGINGFACE_MODEL"),
+    "huggingfaceToken": os.getenv("HUGGINGFACE_TOKEN"),
+    "aiMethod": os.getenv("AI_METHOD", "CAI"),
+}
+```
 
 # License
 [MIT](https://github.com/FireStreaker2/AI/blob/main/LICENSE)

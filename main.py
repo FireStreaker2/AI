@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import requests
 import g4f
@@ -15,12 +16,12 @@ config = {
     "caiToken": os.getenv("CAI_TOKEN"),
     "caiCharacter": os.getenv("CAI_CHARACTER"),
     "openAIToken": os.getenv("OPENAI_TOKEN"),
-    "openAIModel": "gpt-3.5-turbo",
-    "g4fModel": "gpt-3.5-turbo",
-    "g4fProvider": g4f.Provider.Vercel,
+    "openAIModel": os.getenv("OPENAI_MODEL", "gpt-3.5-turbo"),
+    "g4fModel": os.getenv("G4F_MODEL", "gpt-3.5-turbo"),
+    "g4fProvider": os.getenv("G4F_PROVIDER", g4f.Provider.Vercel),
     "huggingfaceModel": os.getenv("HUGGINGFACE_MODEL"),
     "huggingfaceToken": os.getenv("HUGGINGFACE_TOKEN"),
-    "aiMethod": "CAI",
+    "aiMethod": os.getenv("AI_METHOD", "CAI"),
 }
 
 if config["aiMethod"] == "CAI":
@@ -49,11 +50,15 @@ elif config["aiMethod"] == "HUGGING":
 
     bot = config["huggingfaceModel"].split("/")[-1]
 
-else:
+elif config["aiMethod"] == "OPENAI":
     client = OpenAI(api_key=config["openAIToken"])
     history = []
 
     bot = config["openAIModel"]
+
+else:
+    print("A valid AI Method was not provided. Please edit your configuration.")
+    sys.exit(727)
 
 print(f"Now chatting with: {bot}")
 
@@ -64,13 +69,11 @@ try:
         if config["aiMethod"] == "CAI":
             data = client.chat.send_message(chat["external_id"], tgt, message)
 
-            name = data["src_char"]["participant"]["name"]
             text = data["replies"][0]["text"]
 
         elif config["aiMethod"] == "G4F":
             history.append({"role": "user", "content": message})
 
-            name = config["g4fModel"]
             text = g4f.ChatCompletion.create(
                 model=config["g4fModel"],
                 messages=history,
@@ -79,8 +82,6 @@ try:
             history.append({"role": "assistant", "content": text})
 
         elif config["aiMethod"] == "HUGGING":
-            name = config["huggingfaceModel"].split("/")[-1]
-
             response = requests.post(
                 config["huggingfaceModel"],
                 headers={"Authorization": f"Bearer {config['huggingfaceToken']}"},
@@ -99,7 +100,7 @@ try:
             history["user"].append(message)
             history["ai"].append(text)
 
-        else:
+        elif config["aiMethod"] == "OPENAI":
             history.append({"role": "user", "content": message})
 
             response = client.chat.completions.create(
@@ -107,19 +108,21 @@ try:
                 messages=history,
             )
 
-            name = config["openAIModel"]
             text = response["choices"][0]["message"]["content"]
 
             history.append({"role": "assistant", "content": text})
 
-        print(f"{name}: {text}")
+        else:
+            print("A valid AI Method was not provided. Please edit your configuration.")
+            sys.exit(727)
+
+        print(f"{bot}: {text}")
 
         tts = gTTS(text, lang="en")
         tts.save("out.mp3")
 
         audio = AudioSegment.from_file("out.mp3", format="mp3")
         play(audio)
-
 
 except KeyboardInterrupt:
     try:
