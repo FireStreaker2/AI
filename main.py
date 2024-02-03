@@ -1,5 +1,6 @@
 import os
 import time
+import requests
 import g4f
 from characterai import PyCAI
 from openai import OpenAI
@@ -17,7 +18,9 @@ config = {
     "openAIModel": "gpt-3.5-turbo",
     "g4fModel": "gpt-3.5-turbo",
     "g4fProvider": g4f.Provider.Vercel,
-    "aiMethod": "G4F",
+    "huggingfaceModel": os.getenv("HUGGINGFACE_MODEL"),
+    "huggingfaceToken": os.getenv("HUGGINGFACE_TOKEN"),
+    "aiMethod": "CAI",
 }
 
 if config["aiMethod"] == "CAI":
@@ -37,6 +40,14 @@ elif config["aiMethod"] == "G4F":
     history = []
 
     bot = config["g4fModel"]
+
+elif config["aiMethod"] == "HUGGING":
+    history = {
+        "user": [],
+        "ai": [],
+    }
+
+    bot = config["huggingfaceModel"].split("/")[-1]
 
 else:
     client = OpenAI(api_key=config["openAIToken"])
@@ -66,6 +77,27 @@ try:
             )
 
             history.append({"role": "assistant", "content": text})
+
+        elif config["aiMethod"] == "HUGGING":
+            name = config["huggingfaceModel"].split("/")[-1]
+
+            response = requests.post(
+                config["huggingfaceModel"],
+                headers={"Authorization": f"Bearer {config['huggingfaceToken']}"},
+                json={
+                    "inputs": {
+                        "past_user_inputs": history["user"],
+                        "generated_responses": history["ai"],
+                        "text": message,
+                    },
+                },
+            )
+
+            data = response.json()
+            text = data["generated_text"]
+
+            history["user"].append(message)
+            history["ai"].append(text)
 
         else:
             history.append({"role": "user", "content": message})
