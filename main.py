@@ -9,6 +9,7 @@ from pydub import AudioSegment
 from pydub.playback import play
 from dotenv import load_dotenv
 from gtts import gTTS
+import speech_recognition as sr
 
 load_dotenv()
 
@@ -21,6 +22,8 @@ config = {
     "g4fProvider": os.getenv("G4F_PROVIDER", g4f.Provider.Vercel),
     "huggingfaceModel": os.getenv("HUGGINGFACE_MODEL"),
     "huggingfaceToken": os.getenv("HUGGINGFACE_TOKEN"),
+    "inputMethod": "text",
+    "outputMethod": "text",
     "aiMethod": os.getenv("AI_METHOD", "CAI"),
 }
 
@@ -64,7 +67,24 @@ print(f"Now chatting with: {bot}")
 
 try:
     while True:
-        message = input("You: ")
+        if config["inputMethod"] == "speech":
+            recognizer = sr.Recognizer()
+
+            with sr.Microphone() as source:
+                print("Listening...")
+                recognizer.adjust_for_ambient_noise(source)
+                audio = recognizer.listen(source, timeout=5)
+
+            try:
+                message = recognizer.recognize_google(audio)
+                print(f"You: {message}")
+
+            except sr.RequestError as e:
+                print(e)
+                sys.exit(727)
+
+        else:
+            message = input("You: ")
 
         if config["aiMethod"] == "CAI":
             data = client.chat.send_message(chat["external_id"], tgt, message)
@@ -116,13 +136,14 @@ try:
             print("A valid AI Method was not provided. Please edit your configuration.")
             sys.exit(727)
 
+        if config["outputMethod"] == "speech":
+            tts = gTTS(text, lang="en")
+            tts.save("out.mp3")
+
+            audio = AudioSegment.from_file("out.mp3", format="mp3")
+            play(audio)
+
         print(f"{bot}: {text}")
-
-        tts = gTTS(text, lang="en")
-        tts.save("out.mp3")
-
-        audio = AudioSegment.from_file("out.mp3", format="mp3")
-        play(audio)
 
 except KeyboardInterrupt:
     try:

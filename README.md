@@ -6,8 +6,8 @@ AI is a simple program to talk to artificial intelligence. It supports many diff
 # Features
 - [x] Text to text
 - [x] Text to speech
-- [ ] Speech to text
-- [ ] Speech to speech
+- [x] Speech to text
+- [x] Speech to speech
 - [x] Ability to customize source of AI
 
 # Usage
@@ -34,6 +34,8 @@ config = {
     "g4fProvider": os.getenv("G4F_PROVIDER", g4f.Provider.Vercel),
     "huggingfaceModel": os.getenv("HUGGINGFACE_MODEL"),
     "huggingfaceToken": os.getenv("HUGGINGFACE_TOKEN"),
+    "inputMethod": "text",
+    "outputMethod": "text",
     "aiMethod": os.getenv("AI_METHOD", "CAI"),
 }
 ```
